@@ -1,0 +1,10 @@
+template1	217	36	-35	1.6
+template2	50	37	65	1
+template3	225	165	-38	1.6
+template4	50	161	-8	0.7
+template5	139	148	-11	0.5
+template6	25	91	87	1.4
+template7	14	129	-69	0.5
+template8	155	64	29	1
+template9	199	101	55	1.1
+template10	102	190	44	1.3

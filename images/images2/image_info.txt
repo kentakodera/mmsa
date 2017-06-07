@@ -1,0 +1,15 @@
+template1	212	179	0	1
+template2	145	72	0	1
+template3	126	22	0	1
+template4	70	63	0	1
+template5	36	45	0	1
+template6	56	139	0	1
+template7	184	132	0	1
+template8	262	66	0	1
+template9	71	104	0	1
+template10	272	170	0	1
+template11	209	51	0	1
+template12	272	31	0	1
+template13	256	198	0	1
+template14	174	165	0	1
+template15	89	19	0	1
