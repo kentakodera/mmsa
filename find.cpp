@@ -100,6 +100,29 @@ public:
 	}
 };
 
+Image balance(Image templates, double scale, int rot){
+		Image temp;
+		temp.H = templates.H * scale;
+		temp.W = templates.W * scale;
+		temp.data.resize(temp.H);
+		for(int i=0; i<temp.H; i++){
+			temp.data[i].resize(temp.W);
+		}
+		for(int h=0; h<temp.H; h++){
+			for(int w=0; w<temp.W; w++){
+				int h_ = static_cast<int>(h/scale+0.9);
+				int w_ = static_cast<int>(w/scale+0.9);
+				if(h_ >= templates.H) h_ = templates.H-1;
+				if(w_ >= templates.W) w_ = templates.W-1;
+				temp.data[h][w] = templates.data[h_][w_];
+				
+			}
+		}
+
+		temp.makevisited();
+		return temp;
+}
+
 int main(){
 	auto start = std::chrono::system_clock::now();
 
@@ -115,23 +138,32 @@ int main(){
 		}
 	}
 
-	// templatesの切り出し
-	for(int i=0; i<templates.size(); i++)
-		for(int h=0; h<templates[i].H; h++)
-			for(int w=0; w<templates[i].W; w++)
-				if(! templates[i].visited[h][w])
-					templates[i].triming(h,w);
 
 	// targetの走査
-	for(int h=0; h<target.H; h++)
+	for(int h=0; h<target.H; h++){
 		for(int w=0; w<target.W; w++){
 			if(! target.visited[h][w]){
 				target.triming(h,w);
 				vector<int> diff;
 				diff.resize(templates.size());
+				vector<int> diff(templates.size());
 				for(int i=0; i<templates.size(); i++){
 					for(int dh=0; dh<max_h_tmp-min_h_tmp; dh++){
 						for(int dw=0; dw<max_w_tmp-min_w_tmp; dw++){
+					// templateの大きさと角度の調整
+					double scale = (double)target.S_trim / (double)templates[i].S;
+					int rot=0;
+					Image temp = balance(templates[i], scale, rot);
+					for(int h_=0; h_<temp.H; h_++){
+						for(int w_=0; w_<temp.W; w_++){
+							if(! temp.visited[h_][w_]){
+								temp.triming(h_, w_);
+							}
+						}
+					}
+					//左上の点を合わせて比較		
+					for(int dh=0; dh<min(target.H_trim,temp.H_trim); dh++){
+						for(int dw=0; dw<min(target.W_trim, temp.W_trim); dw++){
 							diff[i] += pow((temp.data[temp.upleft.h+dh][temp.upleft.w+dw] 
 															- target.data[target.upleft.h+dh][target.upleft.w+dw]), 2);
 						}
