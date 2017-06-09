@@ -9,6 +9,11 @@ g++ -std=c++11 find.cpp && ./a.out
 #include <chrono>
 using namespace std;
 
+typedef struct {
+	int h;
+	int w;
+}Point;
+
 class Image{
 public:
 	const int MAX = 10000;
@@ -63,26 +68,24 @@ public:
 
 	// 左上端と右下端座標を計算
 	void triming(int h, int w){
-		queue< pair<int,int> > que;
+		queue<Point> que;
 		int dh[4] = {1,0,-1,0};
 		int dw[4] = {0,1,0,-1};
 		que.push({h,w});
-		visited[h][w] = true;
+		visited[h][w] = true; 
 		int max_h=0, min_h=MAX, max_w=0, min_w=MAX;
 		while(que.size()){
-			int h2 = que.front().first; 
-			int w2 = que.front().second; que.pop();
-			max_h = max(max_h, h2);
-			min_h = min(min_h, h2);
-			max_w = max(max_w, w2);
-			min_w = min(min_w, w2);
+			Point p = que.front(); que.pop();
+			max_h = max(max_h, p.h);
+			min_h = min(min_h, p.h);
+			max_w = max(max_w, p.w);
+			min_w = min(min_w, p.w);
 			for(int i=0; i<4; i++){
-				int h3 = h2 + dh[i];
-				int w3 = w2 + dw[i];
-				if(h3>0 && h3<H && w3>0 && w3<W){
-					if(! visited[h3][w3]){
-						que.push({h3,w3});
-						visited[h3][w3] = true;
+				Point np = {p.h + dh[i], p.w + dw[i]};
+				if(np.h>0 && np.h<H && np.w>0 && np.w<W){
+					if(! visited[np.h][np.w]){
+						que.push(np);
+						visited[np.h][np.w] = true;
 					}
 				}
 			}
