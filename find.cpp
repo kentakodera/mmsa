@@ -1,4 +1,3 @@
-g++ -std=c++11 find.cpp && ./a.out
 // g++ -std=c++11 find.cpp && ./a.out
 #include <iostream>
 #include <fstream>
@@ -17,8 +16,8 @@ typedef struct {
 class Image{
 public:
 	const int MAX = 10000;
-	int W,H;
-	pair<int,int> upleft, downright;
+	int W, H, S, W_trim, H_trim, S_trim;
+	Point upleft;
 	vector<vector<int>> data;
 	vector<vector<bool>> visited;
 
@@ -90,12 +89,11 @@ public:
 				}
 			}
 		}
-		downright.first = max_h;
-		downright.second = max_w;
-		upleft.first = min_h;
-		upleft.second = min_w;
+		upleft.h = min_h;
+		upleft.w = min_w;
+		H_trim = max_h - min_h;
+		W_trim = max_w - min_w;
 	}
-
 };
 
 int main(){
@@ -128,18 +126,10 @@ int main(){
 				vector<int> diff;
 				diff.resize(templates.size());
 				for(int i=0; i<templates.size(); i++){
-					int max_h_tgt = target.downright.first;
-					int min_h_tgt = target.upleft.first;
-					int max_w_tgt = target.downright.second;
-					int min_w_tgt = target.upleft.second;
-					int max_h_tmp = templates[i].downright.first;
-					int min_h_tmp = templates[i].upleft.first;
-					int max_w_tmp = templates[i].downright.second;
-					int min_w_tmp = templates[i].upleft.second;				
 					for(int dh=0; dh<max_h_tmp-min_h_tmp; dh++){
 						for(int dw=0; dw<max_w_tmp-min_w_tmp; dw++){
-							diff[i] += pow((templates[i].data[min_h_tmp+dh][min_w_tmp+dw] 
-															- target.data[min_h_tgt+dh][min_w_tgt+dw]), 2);
+							diff[i] += pow((temp.data[temp.upleft.h+dh][temp.upleft.w+dw] 
+															- target.data[target.upleft.h+dh][target.upleft.w+dw]), 2);
 						}
 					}
 				}
