@@ -1,10 +1,12 @@
 g++ -std=c++11 find.cpp && ./a.out
+// g++ -std=c++11 find.cpp && ./a.out
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <queue>
 #include <cmath>
+#include <chrono>
 using namespace std;
 
 class Image{
@@ -94,6 +96,7 @@ public:
 };
 
 int main(){
+	auto start = std::chrono::system_clock::now();
 
 	Image target;
 	target.readdata("images/images1/image.pgm");
@@ -144,6 +147,11 @@ int main(){
 				cout << "template" << ans_num+1 << " " << center_h << " " << center_w << endl;
 			}
 		}
+
+		auto end = std::chrono::system_clock::now();     
+    auto dur = end - start;       
+    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    std::cout << msec << " milli sec \n";
 
 	return 0;
 }
