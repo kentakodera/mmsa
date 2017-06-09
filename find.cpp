@@ -147,17 +147,21 @@ int main(){
 				vector<int> diff;
 				diff.resize(templates.size());
 				vector<int> diff(templates.size());
+				vector<Point> center_dist(templates.size());
+				vector<pair<double, int>> scale_rot(templates.size());
 				for(int i=0; i<templates.size(); i++){
 					for(int dh=0; dh<max_h_tmp-min_h_tmp; dh++){
 						for(int dw=0; dw<max_w_tmp-min_w_tmp; dw++){
 					// templateの大きさと角度の調整
 					double scale = (double)target.S_trim / (double)templates[i].S;
 					int rot=0;
+					scale_rot[i] = {scale, rot};
 					Image temp = balance(templates[i], scale, rot);
 					for(int h_=0; h_<temp.H; h_++){
 						for(int w_=0; w_<temp.W; w_++){
 							if(! temp.visited[h_][w_]){
 								temp.triming(h_, w_);
+								center_dist[i] = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
 							}
 						}
 					}
@@ -174,6 +178,10 @@ int main(){
 				int center_h = target.upleft.first + (14-templates[ans_num].upleft.first);
 				int center_w = target.upleft.second + (14-templates[ans_num].upleft.second);
 				cout << "template" << ans_num+1 << " " << center_h << " " << center_w << endl;
+				int center_h = target.upleft.h + (center_dist[ans_num].h);
+				int center_w = target.upleft.w + (center_dist[ans_num].w);
+				cout << "template" << ans_num+1 << "  " << center_w << "  " << center_h 
+						 << " " << scale_rot[ans_num].second << "  " << scale_rot[ans_num].first << endl;
 			}
 		}
 
