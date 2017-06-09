@@ -48,21 +48,23 @@ public:
 		else return false;
 	}
 
-	// 未踏はfalse, 訪問済みtrue, 0が入っている場所はtrue
+	// 未踏はfalse, 訪問済みtrue
+	// 0が入っている場所はtrue, ついでに総面積Sも算出
 	void makevisited(){
 		visited.resize(H);
 		for(int i=0; i<H; i++){
 			visited[i].resize(W);
 		}
-
+		int S_=0;
 		for(int h=0; h<H; h++){
 			for(int w=0; w<W; w++){
-				visited[h][w] = false;
 				if(data[h][w] == 0){
 					visited[h][w] = true;
+					S_++;
 				}
 			}
 		}
+		S = H * W - S_;
 	}
 
 	// 左上端と右下端座標を計算
@@ -72,6 +74,7 @@ public:
 		int dw[4] = {0,1,0,-1};
 		que.push({h,w});
 		visited[h][w] = true; 
+		S_trim = 1;
 		int max_h=0, min_h=MAX, max_w=0, min_w=MAX;
 		while(que.size()){
 			Point p = que.front(); que.pop();
@@ -84,6 +87,7 @@ public:
 				if(np.h>0 && np.h<H && np.w>0 && np.w<W){
 					if(! visited[np.h][np.w]){
 						que.push(np);
+						S_trim++;
 						visited[np.h][np.w] = true;
 					}
 				}
