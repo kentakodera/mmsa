@@ -104,20 +104,29 @@ public:
 };
 
 Image balance(Image templates, double scale, int rot){
+		static const double pi = 3.141592653589793;
+		double theta = rot*pi/180;
 		Image temp;
 		temp.H = templates.H * scale;
 		temp.W = templates.W * scale;
+		Point c = {templates.H/2, templates.W/2};
+
 		temp.data.resize(temp.H);
 		for(int i=0; i<temp.H; i++){
 			temp.data[i].resize(temp.W);
 		}
 		for(int h=0; h<temp.H; h++){
 			for(int w=0; w<temp.W; w++){
-				int h_ = static_cast<int>(h/scale+0.9);
-				int w_ = static_cast<int>(w/scale+0.9);
-				if(h_ >= templates.H) h_ = templates.H-1;
-				if(w_ >= templates.W) w_ = templates.W-1;
-				temp.data[h][w] = templates.data[h_][w_];
+				int h_s = static_cast<int>(h/scale+0.9);
+				int w_s = static_cast<int>(w/scale+0.9);
+				//画像中心を中心として回転
+				int h_r = cos(-theta)*(h_s-c.h) - sin(-theta)*(w_s-c.w) + c.h +0.9;
+				int w_r = sin(-theta)*(h_s-c.h) + cos(-theta)*(w_s-c.w) + c.w +0.9;
+				if(h_r >= templates.H) h_r = templates.H-1;
+				if(w_r >= templates.W) w_r = templates.W-1;
+				if(h_r < 0) h_r = 0;
+				if(w_r < 0) w_r = 0;
+				temp.data[h][w] = templates.data[h_r][w_r];
 				
 			}
 		}
