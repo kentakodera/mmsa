@@ -155,41 +155,45 @@ int main(){
 		for(int w=0; w<target.W; w++){
 			if(! target.visited[h][w]){
 				target.triming(h,w);
-				vector<int> diff(templates.size());
+				vector<int> diff_templates(templates.size());
 				vector<Point> center_dist(templates.size());
 				vector<pair<double, int>> scale_rot(templates.size());
 				for(int i=0; i<templates.size(); i++){
-
 					// templateの大きさと角度の調整
 					double scale = sqrt((double)target.S_trim / (double)templates[i].S);
-					int rot=0;
-					scale_rot[i] = {scale, rot};
-					Image temp = balance(templates[i], scale, rot);
-					for(int h_=0; h_<temp.H; h_++){
-						for(int w_=0; w_<temp.W; w_++){
-							if(! temp.visited[h_][w_]){
-								temp.triming(h_, w_);
-								center_dist[i] = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
+					vector<int> diff_rots(180);
+					for(int r=0; r<180; r++){
+						Image temp = balance(templates[i], scale, r-90);
+						for(int h_=0; h_<temp.H; h_++){
+							for(int w_=0; w_<temp.W; w_++){
+								if(! temp.visited[h_][w_]){
+									temp.triming(h_, w_);
+									center_dist[i] = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
+								}
+							}
+						}
+					//左上の点を合わせて比較		
+						for(int dh=0; dh<min(target.H_trim,temp.H_trim); dh++){
+							for(int dw=0; dw<min(target.W_trim, temp.W_trim); dw++){
+								diff_rots[r] += pow((temp.data[temp.upleft.h+dh][temp.upleft.w+dw] 
+																- target.data[target.upleft.h+dh][target.upleft.w+dw]), 2);
 							}
 						}
 					}
-					//左上の点を合わせて比較		
-					for(int dh=0; dh<min(target.H_trim,temp.H_trim); dh++){
-						for(int dw=0; dw<min(target.W_trim, temp.W_trim); dw++){
-							diff[i] += pow((temp.data[temp.upleft.h+dh][temp.upleft.w+dw] 
-															- target.data[target.upleft.h+dh][target.upleft.w+dw]), 2);
-						}
-					}
+					auto diff_rots_min = min_element(diff_rots.begin(), diff_rots.end());
+					int best_rot_num = distance(diff_rots.begin(), diff_rots_min);
+					scale_rot[i] = {scale, best_rot_num -90};
+					diff_templates[i] = diff_rots[best_rot_num];
 				}
-				auto min_diff = min_element(diff.begin(), diff.end());
-				int ans_num = distance(diff.begin(), min_diff);
-				cout << "template" << ans_num+1 << " " << center_h << " " << center_w << endl;
+				auto diff_templates_min = min_element(diff_templates.begin(), diff_templates.end());
+				int ans_num = distance(diff_templates.begin(), diff_templates_min);
 				int center_h = target.upleft.h + (center_dist[ans_num].h);
 				int center_w = target.upleft.w + (center_dist[ans_num].w);
 				cout << "template" << ans_num+1 << "  " << center_w << "  " << center_h 
 						 << " " << scale_rot[ans_num].second << "  " << scale_rot[ans_num].first << endl;
 			}
 		}
+	}
 
 		auto end = std::chrono::system_clock::now();     
     auto dur = end - start;       
