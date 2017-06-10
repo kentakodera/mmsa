@@ -16,7 +16,8 @@ typedef struct {
 class Image{
 public:
 	const int MAX = 10000;
-	int W, H, S, W_trim, H_trim, S_trim;
+	int W, H, W_trim, H_trim;
+	double S, S_trim;
 	Point upleft;
 	vector<vector<int>> data;
 	vector<vector<bool>> visited;
@@ -53,18 +54,19 @@ public:
 	void makevisited(){
 		visited.resize(H);
 		for(int i=0; i<H; i++){
-			visited[i].resize(W);
+			visited[i].assign(W,false);
 		}
-		int S_=0;
+		S = 0;
 		for(int h=0; h<H; h++){
 			for(int w=0; w<W; w++){
 				if(data[h][w] == 0){
 					visited[h][w] = true;
-					S_++;
+				}
+				else{
+					S += data[h][w];
 				}
 			}
 		}
-		S = H * W - S_;
 	}
 
 	// 左上端と右下端座標を計算
@@ -74,7 +76,7 @@ public:
 		int dw[4] = {0,1,0,-1};
 		que.push({h,w});
 		visited[h][w] = true; 
-		S_trim = 1;
+		S_trim = data[h][w];
 		int max_h=0, min_h=MAX, max_w=0, min_w=MAX;
 		while(que.size()){
 			Point p = que.front(); que.pop();
@@ -87,7 +89,7 @@ public:
 				if(np.h>0 && np.h<H && np.w>0 && np.w<W){
 					if(! visited[np.h][np.w]){
 						que.push(np);
-						S_trim++;
+						S_trim += data[np.h][np.w];
 						visited[np.h][np.w] = true;
 					}
 				}
@@ -118,7 +120,6 @@ Image balance(Image templates, double scale, int rot){
 				
 			}
 		}
-
 		temp.makevisited();
 		return temp;
 }
@@ -144,16 +145,13 @@ int main(){
 		for(int w=0; w<target.W; w++){
 			if(! target.visited[h][w]){
 				target.triming(h,w);
-				vector<int> diff;
-				diff.resize(templates.size());
 				vector<int> diff(templates.size());
 				vector<Point> center_dist(templates.size());
 				vector<pair<double, int>> scale_rot(templates.size());
 				for(int i=0; i<templates.size(); i++){
-					for(int dh=0; dh<max_h_tmp-min_h_tmp; dh++){
-						for(int dw=0; dw<max_w_tmp-min_w_tmp; dw++){
+
 					// templateの大きさと角度の調整
-					double scale = (double)target.S_trim / (double)templates[i].S;
+					double scale = sqrt((double)target.S_trim / (double)templates[i].S);
 					int rot=0;
 					scale_rot[i] = {scale, rot};
 					Image temp = balance(templates[i], scale, rot);
@@ -175,8 +173,6 @@ int main(){
 				}
 				auto min_diff = min_element(diff.begin(), diff.end());
 				int ans_num = distance(diff.begin(), min_diff);
-				int center_h = target.upleft.first + (14-templates[ans_num].upleft.first);
-				int center_w = target.upleft.second + (14-templates[ans_num].upleft.second);
 				cout << "template" << ans_num+1 << " " << center_h << " " << center_w << endl;
 				int center_h = target.upleft.h + (center_dist[ans_num].h);
 				int center_w = target.upleft.w + (center_dist[ans_num].w);
