@@ -72,8 +72,7 @@ public:
 	// 左上端と右下端座標を計算
 	void triming(int h, int w){
 		queue<Point> que;
-		int dh[4] = {1,0,-1,0};
-		int dw[4] = {0,1,0,-1};
+		int dp[3] = {-1,0,1};
 		que.push({h,w});
 		visited[h][w] = true; 
 		S_trim = data[h][w];
@@ -84,13 +83,15 @@ public:
 			min_h = min(min_h, p.h);
 			max_w = max(max_w, p.w);
 			min_w = min(min_w, p.w);
-			for(int i=0; i<4; i++){
-				Point np = {p.h + dh[i], p.w + dw[i]};
-				if(np.h>0 && np.h<H && np.w>0 && np.w<W){
-					if(! visited[np.h][np.w]){
-						que.push(np);
-						S_trim += data[np.h][np.w];
-						visited[np.h][np.w] = true;
+			for(int i=0; i<3; i++){
+				for(int j=0; j<3; j++){
+					Point np = {p.h + dp[i], p.w + dp[j]};
+					if(np.h>=0 && np.h<H && np.w>=0 && np.w<W){
+						if(! visited[np.h][np.w]){
+							que.push(np);
+							S_trim += data[np.h][np.w];
+							visited[np.h][np.w] = true;
+						}
 					}
 				}
 			}
