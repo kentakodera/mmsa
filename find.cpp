@@ -117,8 +117,8 @@ Image balance(Image templates, double scale, int rot){
 		}
 		for(int h=0; h<temp.H; h++){
 			for(int w=0; w<temp.W; w++){
-				int h_s = static_cast<int>(h/scale+0.9);
-				int w_s = static_cast<int>(w/scale+0.9);
+				double h_s = h/scale;
+				double w_s = w/scale;
 				//画像中心を中心として回転
 				int h_r = cos(-theta)*(h_s-c.h) - sin(-theta)*(w_s-c.w) + c.h +0.9;
 				int w_r = sin(-theta)*(h_s-c.h) + cos(-theta)*(w_s-c.w) + c.w +0.9;
