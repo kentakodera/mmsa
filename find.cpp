@@ -1,4 +1,4 @@
-// g++ -std=c++11 find.cpp && ./a.out
+// g++ -O3 -std=c++11 find.cpp && ./a.out
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,10 +8,18 @@
 #include <chrono>
 using namespace std;
 
-typedef struct {
+typedef struct{
 	int h;
 	int w;
 }Point;
+
+typedef struct{
+	int template_num;
+	int diff;
+	Point c_dist;
+	double scale;
+	int rot;
+}Output;
 
 class Image{
 public:
@@ -22,6 +30,7 @@ public:
 	vector<vector<int>> data;
 	vector<vector<bool>> visited;
 
+	// 画像の読み込み ファイルが存在しない場合falseを返す
 	bool readdata(string filename){
 		string str;
 		ifstream fin(filename);
@@ -101,9 +110,9 @@ public:
 	}
 };
 
+// 入力画像をscale倍しrot度回転させた画像を返す
 Image balance(Image templates, double scale, int rot){
-		static const double pi = 3.141592653589793;
-		double theta = rot*pi/180;
+		double theta = rot*M_PI/180;
 		Image temp;
 		temp.H = templates.H * scale;
 		temp.W = templates.W * scale;
@@ -139,6 +148,7 @@ int main(){
 	Image target;
 	target.readdata("images/images4/image.pgm");
 	
+	// template画像がある限り読み込み
 	vector<Image> templates;
 	for(int i=0; 1;i++){
 		templates.resize(i+1);
@@ -153,49 +163,49 @@ int main(){
 		for(int w=0; w<target.W; w++){
 			if(! target.visited[h][w]){
 				target.trimming(h,w);
-				vector<int> diff_templates(templates.size());
-				vector<Point> center_dist(templates.size());
-				vector<pair<double, int>> scale_rot(templates.size());
+				Output ans;
+				ans.diff = 2147483647;
+				Output now;
 				for(int i=0; i<templates.size(); i++){
-					// templateの倍率は画素値の和から，角度は-90~90まで総当たり
-					double scale = sqrt((double)target.S_trim / (double)templates[i].S);
-					vector<int> diff_rots(180);
+					now.template_num = i;
+					// templateの倍率を画素値の和の比から求め，角度は-90~90まで総当たり
+					now.scale = sqrt((double)target.S_trim / (double)templates[i].S);
 					for(int r=0; r<180; r++){
-						Image temp = balance(templates[i], scale, r-90);
+						now.rot = r-90;
+						Image temp = balance(templates[i], now.scale, now.rot);
 						// templateは1度trimmingできればよい 縮小により離れた点を読むことを防ぐ
 						bool trimmed = false;
 						for(int h_=0; h_<temp.H; h_++){
 							for(int w_=0; w_<temp.W; w_++){
 								if(! temp.visited[h_][w_] and ! trimmed){
 									temp.trimming(h_, w_);
-									center_dist[i] = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
+									now.c_dist = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
 									trimmed = true;
 								}
 							}
 						}
 						// 左上の点を合わせて比較	 範囲は小さい方に合わせる
-						for(int dh=0; dh<min(target.H_trim,temp.H_trim); dh++){
-							for(int dw=0; dw<min(target.W_trim, temp.W_trim); dw++){
-								diff_rots[r] += pow((temp.data[temp.upleft.h+dh][temp.upleft.w+dw] 
-																- target.data[target.upleft.h+dh][target.upleft.w+dw]), 2);
+						int diff = 0;
+						Point range = {min(target.H_trim,temp.H_trim), min(target.W_trim, temp.W_trim)};
+						for(int dh=0; dh<range.h; dh++){
+							for(int dw=0; dw<range.w; dw++){
+								int temp_pixel = temp.data[temp.upleft.h+dh][temp.upleft.w+dw];
+								int target_pixel = target.data[target.upleft.h+dh][target.upleft.w+dw];
+								// 1画素あたりの画素値の差の2乗を求める
+								diff += pow((temp_pixel - target_pixel), 2) / (range.h * range.w) ;
 							}
 						}
-						// 比較した画素数で割り平均をとる
-						diff_rots[r] /= min(target.H_trim,temp.H_trim)*min(target.W_trim, temp.W_trim);
+						// diffが小さい方を答えとする
+						if(diff < ans.diff){	
+							now.diff = diff;	
+							ans = now;
+						}
 					}
-					// 1つのtemplateについてどの角度が最も一致するか決定
-					auto diff_rots_min = min_element(diff_rots.begin(), diff_rots.end());
-					int best_rot_num = distance(diff_rots.begin(), diff_rots_min);
-					scale_rot[i] = {scale, best_rot_num -90};
-					diff_templates[i] = diff_rots[best_rot_num];
 				}
-				// どのtemplateが最も一致するか決定
-				auto diff_templates_min = min_element(diff_templates.begin(), diff_templates.end());
-				int ans_num = distance(diff_templates.begin(), diff_templates_min);
-				int center_h = target.upleft.h + (center_dist[ans_num].h);
-				int center_w = target.upleft.w + (center_dist[ans_num].w);
-				cout << "template" << ans_num+1 << "  " << center_w << "  " << center_h 
-				     << " " << scale_rot[ans_num].second << "  " << scale_rot[ans_num].first << endl;
+				int center_h = target.upleft.h + (ans.c_dist.h);
+				int center_w = target.upleft.w + (ans.c_dist.w);
+				cout << "template" << ans.template_num+1 << "  " << center_w << "  " << center_h 
+				     << " " << ans.rot << "  " << ans.scale << endl;
 			}
 		}
 	}
