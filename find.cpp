@@ -275,6 +275,26 @@ public:
 		}
 	}
 
+	int sum_upper_ratio(){
+		// 画素合計値のうち上半分が占める割合を百分率で返す
+		int upper_S = 0;
+		for(int h=0; h<H; h++){
+			for(int w=0; w<(W/2); w++){
+				upper_S += data[h][w];
+			}
+		}
+		return upper_S*100 / S;
+	}
+	int sum_left_ratio(){
+		// 画素合計値のうち左半分が占める割合を百分率で返す
+		int left_S = 0;
+		for(int h=0; h<(H/2); h++){
+			for(int w=0; w<W; w++){
+				left_S += data[h][w];
+			}
+		}
+		return left_S*100 / S;
+	}
 
 };
 
