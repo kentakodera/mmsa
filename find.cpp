@@ -178,6 +178,22 @@ public:
 			}
 		}
 	}
+
+	bool writedata(string filename){
+		string str;
+		ofstream fout(filename);
+		fout << "P2" << endl;
+		fout << "# created by find.cpp" << endl;
+		fout << W << " " << H << endl; 
+		fout << 255 << endl;
+		for(int h=0; h<H; h++){
+			for(int w=0; w<W;w++){
+				fout << data[h][w] << " ";
+			}
+			fout << endl;
+		}
+	}
+
 };
 
 // 入力画像をscale倍しrot度回転させた画像を返す
