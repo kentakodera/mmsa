@@ -215,6 +215,21 @@ public:
 		return bin_image;
 	}
 
+	void data_resize(){
+		data.resize(H);
+		for(int i=0; i<H; i++){
+			data[i].resize(W);
+		}
+	}
+	void data_resize(int height,int width){
+		H = height;
+		W = width;
+		data.resize(height);
+		for(int i=0; i<H; i++){
+			data[i].resize(width);
+		}
+	}
+
 
 };
 
