@@ -39,7 +39,8 @@ public:
 		string str;
 		ifstream fin(filename);
 		if(fin){
-			fin >> str; fin.ignore();
+			fin >> str;
+			fin.ignore();
 			if(str != "P2") cout << "file format error" << endl;
 			getline(fin, str); // コメント読み捨て
 			fin >> W >> H; 
@@ -261,12 +262,14 @@ public:
 	}
 
 	void data_resize(){
+		//持ってるH,Wに合わせる
 		data.resize(H);
 		for(int i=0; i<H; i++){
 			data[i].resize(W);
 		}
 	}
 	void data_resize(int height,int width){
+		//h,wを渡された場合はh,wに合わせる
 		H = height;
 		W = width;
 		data.resize(height);
