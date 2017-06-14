@@ -39,7 +39,8 @@ public:
 		string str;
 		ifstream fin(filename);
 		if(fin){
-			fin >> str; fin.ignore();
+			fin >> str;
+			fin.ignore();
 			if(str != "P2") cout << "file format error" << endl;
 			getline(fin, str); // コメント読み捨て
 			fin >> W >> H; 
@@ -261,12 +262,14 @@ public:
 	}
 
 	void data_resize(){
+		//持ってるH,Wに合わせる
 		data.resize(H);
 		for(int i=0; i<H; i++){
 			data[i].resize(W);
 		}
 	}
 	void data_resize(int height,int width){
+		//h,wを渡された場合はh,wに合わせる
 		H = height;
 		W = width;
 		data.resize(height);
@@ -275,6 +278,26 @@ public:
 		}
 	}
 
+	int sum_upper_ratio(){
+		// 画素合計値のうち上半分が占める割合を百分率で返す
+		int upper_S = 0;
+		for(int h=0; h<H; h++){
+			for(int w=0; w<(W/2); w++){
+				upper_S += data[h][w];
+			}
+		}
+		return upper_S*100 / S;
+	}
+	int sum_left_ratio(){
+		// 画素合計値のうち左半分が占める割合を百分率で返す
+		int left_S = 0;
+		for(int h=0; h<(H/2); h++){
+			for(int w=0; w<W; w++){
+				left_S += data[h][w];
+			}
+		}
+		return left_S*100 / S;
+	}
 
 };
 
