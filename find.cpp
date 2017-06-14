@@ -179,7 +179,7 @@ public:
 		}
 	}
 
-	bool writedata(string filename){
+	void writedata(string filename){
 		string str;
 		ofstream fout(filename);
 		fout << "P2" << endl;
