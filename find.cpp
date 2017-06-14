@@ -194,6 +194,28 @@ public:
 		}
 	}
 
+	Image get_binarized_image(){
+		// 二値化　まだ雑
+		Image bin_image;
+		bin_image.W = W;
+		bin_image.H = H;
+		bin_image.data.resize(H);
+		for(int i=0; i<H; i++){
+			bin_image.data[i].resize(W);
+		}
+		for(int h=0;h<H;h++){
+			for(int w=0;w<W;w++){
+				if(data[h][w] > 128){
+					bin_image.data[h][w] = 255;
+				}else{
+					bin_image.data[h][w] = 0;
+				}
+			}
+		}
+		return bin_image;
+	}
+
+
 };
 
 // 入力画像をscale倍しrot度回転させた画像を返す
