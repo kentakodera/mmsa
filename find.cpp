@@ -198,7 +198,32 @@ public:
 		}
 		data = nonoise_data;
 	}
-
+	int count_black(int h,int w){
+		// クソコード
+		int c = 0;
+		if(data[h-1][w-1] < 15){c++;}
+		if(data[h-1][w] < 15){c++;}
+		if(data[h-1][w+1] < 15){c++;}
+		if(data[h][w-1] < 15){c++;}
+		if(data[h][w+1] < 15){c++;}
+		if(data[h+1][w-1] < 15){c++;}
+		if(data[h+1][w] < 15){c++;}
+		if(data[h+1][w+1] < 15){c++;}
+		return c;
+	}
+	int count_white(int h,int w){
+		// クソコード
+		int c = 0;
+		if(data[h-1][w-1] > 192){c++;}
+		if(data[h-1][w] > 192){c++;}
+		if(data[h-1][w+1] > 192){c++;}
+		if(data[h][w-1] > 192){c++;}
+		if(data[h][w+1] > 192){c++;}
+		if(data[h+1][w-1] > 192){c++;}
+		if(data[h+1][w] > 192){c++;}
+		if(data[h+1][w+1] > 192){c++;}
+		return c;
+	}
 	void writedata(string filename){
 		string str;
 		ofstream fout(filename);
