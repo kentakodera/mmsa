@@ -1,6 +1,6 @@
 // g++ -O3 -std=c++11 find.cpp && ./a.out
-#define REMOVE_NOISE_WHITE_THRESHOLD 150
-#define REMOVE_NOISE_BLACK_THRESHOLD 96
+#define REMOVE_NOISE_WHITE_THRESHOLD 192
+#define REMOVE_NOISE_BLACK_THRESHOLD 64
 
 
 #include <iostream>
