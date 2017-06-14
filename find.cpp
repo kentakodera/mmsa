@@ -1,4 +1,8 @@
 // g++ -O3 -std=c++11 find.cpp && ./a.out
+#define REMOVE_NOISE_WHITE_THRESHOLD 150
+#define REMOVE_NOISE_BLACK_THRESHOLD 96
+
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -109,26 +113,68 @@ public:
 		W_trim = max_w - min_w;
 	}
 
+	// 画素情報と周辺平均を投げると条件によってノイズの画素を綺麗にする
+	void remove_noise_pixel(int h,int w,int peripheral_ave){
+		if(data[h][w] == 0 && peripheral_ave > REMOVE_NOISE_WHITE_THRESHOLD){
+			data[h][w] = 255;
+		}
+		if(data[h][w] == 255 && peripheral_ave < REMOVE_NOISE_BLACK_THRESHOLD){
+			data[h][w] = 0;
+		}
+	
+	}
 
+	// ノイズ除去
 	void remove_noise(){
+		int peripheral_ave = 0;
 		for(int h=0; h<H; h++){
 			for(int w=0; w<W; w++){
-                // 四辺上の端は周辺1画素ずつは取れない(はみ出す)ので対策
-                if(h == 0 || h == H-1 || w == 0 || w == W-1){
-                    
-                }else if(data[h][w] == 0){
-                    // 黒画素
-                    int periferal_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
-                    if(periferal_ave > 192){
-                        data[h][w] = 255;
-                    }
-                }else if(data[h][w] == 255){
-                    // 白画素
-                    int periferal_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
-                    if(periferal_ave < 64){
-                        data[h][w] = 0;
-                    }
-                }
+				// 四辺上の端は周辺1画素ずつは取れない(はみ出す)ので対策
+				if(h == 0){
+					// 上辺
+					if(w==0){
+						peripheral_ave = (data[h][w+1] + data[h+1][w] + data[h+1][w+1]) / 3;
+					}
+					if(w==W){
+						peripheral_ave = (data[h][w-1] + data[h+1][w-1] + data[h+1][w]) / 3;
+					}else{
+						peripheral_ave = (data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 5;
+					}
+					remove_noise_pixel(h,w,peripheral_ave);
+				}else if(h == H-1){
+					// 下辺
+					if(w==0){
+						peripheral_ave = (data[h-1][w] + data[h-1][w+1] + data[h][w+1]) / 3;
+					}
+					if(w==W){
+						peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h][w-1]) / 3;
+					}else{
+						peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1]) / 5;
+					}
+					remove_noise_pixel(h,w,peripheral_ave);
+				}else if(w == 0){
+					// 左辺
+					peripheral_ave = (data[h-1][w] + data[h-1][w+1] + data[h][w+1] + data[h+1][w] + data[h+1][w+1]) / 5;
+					remove_noise_pixel(h,w,peripheral_ave);
+				}else if(w == W-1){
+					// 右辺
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h][w-1] + data[h+1][w-1] + data[h+1][w]) / 5;
+					remove_noise_pixel(h,w,peripheral_ave);
+				}
+				// 隣接周辺画素がすべて取れるエリア
+				else if(data[h][w] == 0){
+					// 黒画素
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+					if(peripheral_ave > REMOVE_NOISE_WHITE_THRESHOLD){
+						data[h][w] = 255;
+					}
+				}else if(data[h][w] == 255){
+					// 白画素
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+					if(peripheral_ave < REMOVE_NOISE_BLACK_THRESHOLD){
+						data[h][w] = 0;
+					}
+				}
 			}
 		}
 	}
