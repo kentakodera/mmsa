@@ -108,6 +108,30 @@ public:
 		H_trim = max_h - min_h;
 		W_trim = max_w - min_w;
 	}
+
+
+	void remove_noise(){
+		for(int h=0; h<H; h++){
+			for(int w=0; w<W; w++){
+                // 四辺上の端は周辺1画素ずつは取れない(はみ出す)ので対策
+                if(h == 0 || h == H-1 || w == 0 || w == W-1){
+                    
+                }else if(data[h][w] == 0){
+                    // 黒画素
+                    int periferal_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+                    if(periferal_ave > 192){
+                        data[h][w] = 255;
+                    }
+                }else if(data[h][w] == 255){
+                    // 白画素
+                    int periferal_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+                    if(periferal_ave < 64){
+                        data[h][w] = 0;
+                    }
+                }
+			}
+		}
+	}
 };
 
 // 入力画像をscale倍しrot度回転させた画像を返す
@@ -148,6 +172,7 @@ int main(){
 	Image target;
 	target.readdata("images/images4/image.pgm");
 	
+
 	// template画像がある限り読み込み
 	vector<Image> templates;
 	for(int i=0; 1;i++){
@@ -210,8 +235,8 @@ int main(){
 		}
 	}
 	auto end = std::chrono::system_clock::now();     
-  auto dur = end - start;       
-  auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-  std::cout << msec << " milli sec \n";
+    auto dur = end - start;       
+    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    std::cout << msec << " milli sec \n";
 	return 0;
 }
