@@ -1,4 +1,8 @@
 // g++ -O3 -std=c++11 find.cpp && ./a.out
+#define REMOVE_NOISE_WHITE_THRESHOLD 192
+#define REMOVE_NOISE_BLACK_THRESHOLD 64
+
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -108,6 +112,170 @@ public:
 		H_trim = max_h - min_h;
 		W_trim = max_w - min_w;
 	}
+
+	// 画素情報と周辺平均を投げると条件によってノイズの画素を綺麗にする
+	void remove_noise_pixel(vector<vector<int>>& nonoise_data,int h,int w,int peripheral_ave){
+		if(data[h][w] == 0 && peripheral_ave > REMOVE_NOISE_WHITE_THRESHOLD){
+			nonoise_data[h][w] = 255;
+		}
+		else if(data[h][w] == 255 && peripheral_ave < REMOVE_NOISE_BLACK_THRESHOLD){
+			nonoise_data[h][w] = 0;
+		}else{
+			nonoise_data[h][w] = data[h][w];
+		}
+	
+	}
+
+	// ノイズ除去
+	void remove_noise(){
+		int peripheral_ave = 0;
+
+		vector<vector<int>> nonoise_data;
+		nonoise_data.resize(H);
+		for(int i=0; i<H; i++){
+			nonoise_data[i].resize(W);
+		}
+		
+		for(int h=0; h<H; h++){
+			for(int w=0; w<W; w++){
+				// 四辺上の端は周辺1画素ずつは取れない(はみ出す)ので対策
+				if(h == 0){
+					// 上辺
+					if(w==0){
+						peripheral_ave = (data[h][w+1] + data[h+1][w] + data[h+1][w+1]) / 3;
+					}
+					if(w==W){
+						peripheral_ave = (data[h][w-1] + data[h+1][w-1] + data[h+1][w]) / 3;
+					}else{
+						peripheral_ave = (data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 5;
+					}
+					remove_noise_pixel(nonoise_data,h,w,peripheral_ave);
+				}else if(h == H-1){
+					// 下辺
+					if(w==0){
+						peripheral_ave = (data[h-1][w] + data[h-1][w+1] + data[h][w+1]) / 3;
+					}
+					if(w==W){
+						peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h][w-1]) / 3;
+					}else{
+						peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1]) / 5;
+					}
+					remove_noise_pixel(nonoise_data,h,w,peripheral_ave);
+				}else if(w == 0){
+					// 左辺
+					peripheral_ave = (data[h-1][w] + data[h-1][w+1] + data[h][w+1] + data[h+1][w] + data[h+1][w+1]) / 5;
+					remove_noise_pixel(nonoise_data,h,w,peripheral_ave);
+				}else if(w == W-1){
+					// 右辺
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h][w-1] + data[h+1][w-1] + data[h+1][w]) / 5;
+					remove_noise_pixel(nonoise_data,h,w,peripheral_ave);
+				}
+				// 隣接周辺画素がすべて取れるエリア
+				else if(data[h][w] == 0){
+					// 黒画素
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+					if(count_black(h,w) < 4){
+						nonoise_data[h][w] = 255;
+					}else if(peripheral_ave > REMOVE_NOISE_WHITE_THRESHOLD){
+						nonoise_data[h][w] = 255;
+					}else{
+						nonoise_data[h][w] = data[h][w];
+					}
+				}else if(data[h][w] == 255){
+					// 白画素
+					peripheral_ave = (data[h-1][w-1] + data[h-1][w] + data[h-1][w+1] + data[h][w-1] + data[h][w+1] + data[h+1][w-1] + data[h+1][w] + data[h+1][w+1]) / 8;
+					if(count_white(h,w) < 4){
+						nonoise_data[h][w] = 0;
+					}else if(peripheral_ave < REMOVE_NOISE_BLACK_THRESHOLD){
+						nonoise_data[h][w] = 0;
+					}else{
+						nonoise_data[h][w] = data[h][w];
+					}
+				}else{
+					nonoise_data[h][w] = data[h][w];
+				}
+			}
+		}
+		data = nonoise_data;
+	}
+	int count_black(int h,int w){
+		// クソコード
+		int c = 0;
+		if(data[h-1][w-1] < 15){c++;}
+		if(data[h-1][w] < 15){c++;}
+		if(data[h-1][w+1] < 15){c++;}
+		if(data[h][w-1] < 15){c++;}
+		if(data[h][w+1] < 15){c++;}
+		if(data[h+1][w-1] < 15){c++;}
+		if(data[h+1][w] < 15){c++;}
+		if(data[h+1][w+1] < 15){c++;}
+		return c;
+	}
+	int count_white(int h,int w){
+		// クソコード
+		int c = 0;
+		if(data[h-1][w-1] > 192){c++;}
+		if(data[h-1][w] > 192){c++;}
+		if(data[h-1][w+1] > 192){c++;}
+		if(data[h][w-1] > 192){c++;}
+		if(data[h][w+1] > 192){c++;}
+		if(data[h+1][w-1] > 192){c++;}
+		if(data[h+1][w] > 192){c++;}
+		if(data[h+1][w+1] > 192){c++;}
+		return c;
+	}
+	void writedata(string filename){
+		string str;
+		ofstream fout(filename);
+		fout << "P2" << endl;
+		fout << "# created by find.cpp" << endl;
+		fout << W << " " << H << endl; 
+		fout << 255 << endl;
+		for(int h=0; h<H; h++){
+			for(int w=0; w<W;w++){
+				fout << data[h][w] << " ";
+			}
+			fout << endl;
+		}
+	}
+
+	Image get_binarized_image(){
+		// 二値化　まだ雑
+		Image bin_image;
+		bin_image.W = W;
+		bin_image.H = H;
+		bin_image.data.resize(H);
+		for(int i=0; i<H; i++){
+			bin_image.data[i].resize(W);
+		}
+		for(int h=0;h<H;h++){
+			for(int w=0;w<W;w++){
+				if(data[h][w] > 128){
+					bin_image.data[h][w] = 255;
+				}else{
+					bin_image.data[h][w] = 0;
+				}
+			}
+		}
+		return bin_image;
+	}
+
+	void data_resize(){
+		data.resize(H);
+		for(int i=0; i<H; i++){
+			data[i].resize(W);
+		}
+	}
+	void data_resize(int height,int width){
+		H = height;
+		W = width;
+		data.resize(height);
+		for(int i=0; i<H; i++){
+			data[i].resize(width);
+		}
+	}
+
+
 };
 
 // 入力画像をscale倍しrot度回転させた画像を返す
@@ -141,77 +309,3 @@ Image balance(Image templates, double scale, int rot){
 		return temp;
 }
 
-int main(){
-	// 時間計測開始
-	auto start = std::chrono::system_clock::now();
-
-	Image target;
-	target.readdata("images/images4/image.pgm");
-	
-	// template画像がある限り読み込み
-	vector<Image> templates;
-	for(int i=0; 1;i++){
-		templates.resize(i+1);
-		if(! templates[i].readdata("images/images4/template"+to_string(i+1)+".pgm")){
-			templates.resize(i);
-			break;
-		}
-	}
-
-	// targetの走査 オブジェクトを見つけるごとに最適なtemplateを探す
-	for(int h=0; h<target.H; h++){
-		for(int w=0; w<target.W; w++){
-			if(! target.visited[h][w]){
-				target.trimming(h,w);
-				Output ans;
-				ans.diff = 2147483647;
-				Output now;
-				for(int i=0; i<templates.size(); i++){
-					now.template_num = i;
-					// templateの倍率を画素値の和の比から求め，角度は-90~90まで総当たり
-					now.scale = sqrt((double)target.S_trim / (double)templates[i].S);
-					for(int r=0; r<180; r++){
-						now.rot = r-90;
-						Image temp = balance(templates[i], now.scale, now.rot);
-						// templateは1度trimmingできればよい 縮小により離れた点を読むことを防ぐ
-						bool trimmed = false;
-						for(int h_=0; h_<temp.H; h_++){
-							for(int w_=0; w_<temp.W; w_++){
-								if(! temp.visited[h_][w_] and ! trimmed){
-									temp.trimming(h_, w_);
-									now.c_dist = {temp.H/2-temp.upleft.h, temp.W/2-temp.upleft.w};
-									trimmed = true;
-								}
-							}
-						}
-						// 左上の点を合わせて比較	 範囲は小さい方に合わせる
-						int diff = 0;
-						Point range = {min(target.H_trim,temp.H_trim), min(target.W_trim, temp.W_trim)};
-						for(int dh=0; dh<range.h; dh++){
-							for(int dw=0; dw<range.w; dw++){
-								int temp_pixel = temp.data[temp.upleft.h+dh][temp.upleft.w+dw];
-								int target_pixel = target.data[target.upleft.h+dh][target.upleft.w+dw];
-								// 1画素あたりの画素値の差の2乗を求める
-								diff += pow((temp_pixel - target_pixel), 2) / (range.h * range.w) ;
-							}
-						}
-						// diffが小さい方を答えとする
-						if(diff < ans.diff){	
-							now.diff = diff;	
-							ans = now;
-						}
-					}
-				}
-				int center_h = target.upleft.h + (ans.c_dist.h);
-				int center_w = target.upleft.w + (ans.c_dist.w);
-				cout << "template" << ans.template_num+1 << "  " << center_w << "  " << center_h 
-				     << " " << ans.rot << "  " << ans.scale << endl;
-			}
-		}
-	}
-	auto end = std::chrono::system_clock::now();     
-  auto dur = end - start;       
-  auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-  std::cout << msec << " milli sec \n";
-	return 0;
-}
