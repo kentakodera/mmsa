@@ -1,4 +1,4 @@
-\documentclass[uplatex,dvipdfmx]{jsarticle}
+\documentclass[platex,dvipdfmx]{jsarticle}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{algorithm}
@@ -8,7 +8,7 @@
 \usepackage{listings}
 
 \title{マルチメディア信号処理 第1回レポート課題}
-\author{河野達彦\\28G17041 小寺健太}
+\author{28G17038河野達彦\\28G17041 小寺健太}
 
 \textheight 25cm
 \topmargin -2cm
@@ -60,6 +60,8 @@ template画像の番号は連続であるがフォルダによって画像の数
 全てのtemplate画像を読み込むようにした．\\
 
 \input{readdata.tex}
+\newpage
+
 
 \subsubsection{画像の切り抜き}
 Algorithm1において切り抜きと表現した操作はtrimming()メソッドによって行われる．
@@ -73,12 +75,16 @@ visitedの要素はboolであり，Raddata()内で黒でない画素が格納さ
 
 \input{trimming.tex}
 
+\newpage
+
 \subsubsection{ノイズ処理}
 ノイズが非常に多い画像に対するマッチング処理を行うため，ノイズ除去を行う関数を実装した．
 ノイズ部分は白か黒，すなわち画素値は$0 or 255$であるため，この二種類の値を取っている画素について処理を行うことでノイズ除去による情報量の減少を抑えようと考えた．
 周辺8近傍の平均値がしきい値を上回った・下回った場合にはそれぞれ画素値を$0,255$とする実装を行った．
 また，我々のパターンマッチングのアイディアは黒でないピクセルから，隣接する白でない画素をなぞることで画像を切り抜くが，この切り抜いた部分の大きさが小さかった場合はノイズと判断する様に実装したため周辺が黒い部分での白のノイズの除去は一定の成果が出た時点で完成とした．
 \input{remove_noise.tex}
+
+\newpage
 
 \subsubsection{拡大倍率と回転への対応}
 実装当初は画素数の比を元にtemplate画像の拡大倍率を算出していたが良い結果が得られなかった．
@@ -107,6 +113,8 @@ balance()関数はあるtemplate元画像クラス，拡大倍率，回転角を
 これは切り出し後の幅と高さについて2画像のの最小値をとることで実現できる．
 targetと最も一致するtemplateは，1画素あたりの画素値の差の2乗が最小のものとした．
 某氏の指摘により比較領域の画素数で割ることに気づき精度が向上したことを記しておく．
+\newpage
+
 
 \subsubsection{特徴点抽出}
 手書きの数値画像の特徴点として，以下の項目が使えると考えた．
@@ -121,6 +129,7 @@ targetと最も一致するtemplateは，1画素あたりの画素値の差の2�
 
 また，画素値が左右，上下でどれくらい偏ってるかによって上下対照・左右対称等の特徴を反映できるのではないかと考え，実装し実験を行った．
 
+\newpage
 \subsection{実行環境と結果}
 以下はMacbook Pro(Intel~Corei5~2GHzプロセッサ，8GBメモリ）で実行した結果である．
 また実行時間はchornoライブラリを用いて計測した．
@@ -165,6 +174,7 @@ template3,5,8,13以外は全て誤認識となった．
 template2がtemplate8と誤識別されてしまった．
 他のオブジェクトに関しては座標は2以内，拡大倍率は0.01以内，
 回転角は3度以内の誤差で検出できた．
+\newpage
 
 
 \subsubsection{image4}
@@ -182,6 +192,7 @@ template2がtemplate8と誤識別されてしまった．
 全てのオブジェクトに関して十分な精度で検出できた．
 座標は2以内，拡大倍率は0.01以内，回転角は11度以内の誤差で検出できた．
 
+\newpage
 
 \subsubsection{image5}
 \begin{figure}[h]
@@ -193,25 +204,28 @@ template2がtemplate8と誤識別されてしまった．
 20個のうち正しく識別できたのはtemplate7,8,9,12,17,20の6個であった．
 オブジェクト同士が重なっている画像を識別することは今後への課題とする．
 
+\newpage
+
 \subsubsection{特徴点抽出}
 
+書いてある数字によって偏りが出ている．これらのパラメーターは手書き文字の判別に利用が可能だと考えられる．
 \begin{figure}[h]
 \centering
-\includegraphics[clip,width = 11.5cm]{images/graph/summation.png}
+\includegraphics[width = 11.5cm]{images/graph/summation.PNG}
 \caption{画素値の合計}
 \label{summation}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[clip,width = 11.5cm]{images/graph/upper.png}
+\includegraphics[width = 11.5cm]{images/graph/upper.PNG}
 \caption{上半分の画素値の合計}
 \label{upper}
 \end{figure}
 
 \begin{figure}[h]
 \centering
-\includegraphics[clip,width = 11.5cm]{images/graph/left.png}
+\includegraphics[width = 11.5cm]{images/graph/left.PNG}
 \caption{左半分の画素値の合計}
 \label{left}
 \end{figure}
@@ -266,6 +280,7 @@ image3における誤識別や，出力結果の誤差について考察する�
 このように明らかな補完処理の差があるため，
 特に違いの少ない手書き文字の識別は非常に難しくなる．
 
+\newpage
 
 \section{感想}
 \subsection{河野}
