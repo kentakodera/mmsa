@@ -1,0 +1,30 @@
+  
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+
+  // 画像の読み込み ファイルが存在しない場合false を返す
+  bool readdata(string filename){
+    string str;
+    ifstream fin(filename);
+    if(fin){
+      fin >> str; fin.ignore();
+      if(str != "P2") cout << "file format error" << endl;
+      getline(fin, str); // コメント読み捨て
+      fin >> W >> H; 
+      data.resize(H);
+      for(int i=0; i<H; i++){
+        data[i].resize(W);
+      }
+      fin >> str; //255
+      int h=0, w=0;
+      while(fin >> str){
+        data[h][w] = stoi(str);
+        w  = (w+1) % W;
+        if(w == 0) h++; 
+      }
+      makevisited();
+      return true;
+    }
+    else return false;
+  }
+
+   \end{lstlisting}

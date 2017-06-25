@@ -1,0 +1,36 @@
+   
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single]
+
+// 入力画像をscale倍しrot度回転させた画像を返す
+Image balance(Image templates, double scale, int rot){
+    double theta = rot*M_PI/180;
+    Image temp;
+    temp.H = templates.H * scale;
+    temp.W = templates.W * scale;
+    // 28*28のオリジナルtemplate画像から画素を持ってくるので拡大倍率によらず中心は常に(14,14)
+    Point c = {templates.H/2, templates.W/2};
+
+    temp.data.resize(temp.H);
+    for(int i=0; i<temp.H; i++)
+      temp.data[i].resize(temp.W);
+
+    //画像中心を中心として回転
+    for(int h=0; h<temp.H; h++){
+      for(int w=0; w<temp.W; w++){
+        double h_s = h/scale;
+        double w_s = w/scale;
+        int h_r = cos(-theta)*(h_s-c.h) - sin(-theta)*(w_s-c.w) + c.h;
+        int w_r = sin(-theta)*(h_s-c.h) + cos(-theta)*(w_s-c.w) + c.w;
+        if(h_r >= templates.H) h_r = templates.H-1;
+        if(w_r >= templates.W) w_r = templates.W-1;
+        if(h_r < 0) h_r = 0;
+        if(w_r < 0) w_r = 0;
+        temp.data[h][w] = templates.data[h_r][w_r];
+      }
+    }
+    temp.makevisited();
+    return temp;
+}
+
+\end{lstlisting}
+

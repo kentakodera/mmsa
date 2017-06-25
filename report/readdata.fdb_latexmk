@@ -1,0 +1,16 @@
+# Fdb version 3
+["dvipdf"] 0 "readdata.dvi" "readdata.pdf" "readdata" 0
+  "readdata.dvi" 0 -1 0 "latex"
+  (generated)
+  "readdata.pdf"
+["latex"] 1497417728 "readdata.tex" "readdata.dvi" "readdata" 1497417728
+  "/usr/local/texlive/2016/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
+  "/usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm" 1136768653 768 1321e9409b4137d6fb428ac9dc956269 ""
+  "/usr/local/texlive/2016/texmf-dist/web2c/texmf.cnf" 1491389445 32192 c18bc721db8195c55b3f5b993e802bbf ""
+  "/usr/local/texlive/2016/texmf-var/web2c/euptex/uplatex.fmt" 1492751421 4049857 364885d91562f9c7127f240fa02b2447 ""
+  "/usr/local/texlive/2016/texmf.cnf" 1463979140 577 2938757e76f31531e65cc647e3507693 ""
+  "readdata.aux" 1497417728 8 a94a2480d3289e625eea47cd1b285758 ""
+  "readdata.tex" 1497417728 675 3bc3a4ab5dfa25039bca26fb129536d0 ""
+  (generated)
+  "readdata.dvi"
+  "readdata.log"

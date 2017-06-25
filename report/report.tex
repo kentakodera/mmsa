@@ -1,0 +1,312 @@
+\documentclass[platex,dvipdfmx]{jsarticle}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+
+\title{マルチメディア信号処理 第1回レポート課題}
+\author{28G17038河野達彦\\28G17041 小寺健太}
+
+\textheight 25cm
+\topmargin -2cm
+\textwidth 16cm
+\oddsidemargin 0cm
+
+\begin{document}
+  
+\maketitle
+
+\section{課題1.1}
+\subsection{アルゴリズム概要}
+私たちの班はC++で以下のようなプログラムを作成した．
+
+\begin{algorithm}                      
+\caption{拡大・縮小・回転に対応するパターンマッチング}         
+\label{alg1}                          
+\begin{algorithmic}                  
+\REQUIRE テンプレート画像10〜15枚，探索対象画像(image.pgm)
+\ENSURE 各テンプレート画像の中心位置座標，拡大倍率，回転角
+\STATE 画像の読み込み
+\FOR {image.pgmを左上からスキャン} 
+  \IF {画素が黒でない}
+    \STATE target $\leftarrow$ 8近傍で接続しているオブジェクトを切り抜く
+    \FOR {各テンプレート画像に対して}
+      \STATE オブジェクトの画素値の合計から各テンプレートの拡大倍率を算出
+      \FOR {回転角= -90 to 90}
+        \STATE template $\leftarrow$ 拡大倍率と回転角を反映したテンプレート画像を用意し切り抜く
+        \STATE diff $\leftarrow （\mbox{target}と\mbox{template}の画素値の差）^2 の和 / 比較画素数$
+      \ENDFOR
+    \ENDFOR
+    \STATE targetに対して最小のdiffを与えるtemplate番号，中心位置座標，拡大倍率，回転角を出力
+  \ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{実装の詳細}
+\subsubsection{画像の読み込み}
+画像に関するデータをメンバにもつクラスを用意し，
+そのメソッドとしてReaddata()を作成した．
+Readdata()はファイルパスを引数とし，bool値を返す．
+メソッド内で画素値データを2次元vectorのdataに格納し，
+またその画素値が走査済みかどうかを保持する2次元vectorのvisitedを作成する（makevisited())．
+与えられたpgmファイルは画像の幅や高さ，各画素値はスペース区切りで羅列されている．
+よってifstreamで画像を開いたのち>>演算子を用いることでうまく読み込みができた．
+template画像の番号は連続であるがフォルダによって画像の数が異なるため，
+ファイルの取得に失敗した場合はfalseを返す関数として実装し
+全てのtemplate画像を読み込むようにした．\\
+
+\input{readdata.tex}
+\newpage
+
+
+\subsubsection{画像の切り抜き}
+Algorithm1において切り抜きと表現した操作はtrimming()メソッドによって行われる．
+trimming()は黒でない画素座標を引数とし，8近傍で連結するオブジェクトに内接する長方形を考え
+その左上点の座標と長方形の幅および高さを計算する．
+それに加え拡大倍率算出に使われるオブジェクトの画素値の合計も同時に計算する．
+連結部の走査はQueueを用いた幅優先探索アルゴリズムで実現した．
+これに伴い，画素値が走査済みかどうかを保持する2次元vectorであるvisitedが必要になる．
+visitedの要素はboolであり，Raddata()内で黒でない画素が格納されている座標にfalseを格納した．
+1度訪れた画素座標にはtrueが格納される．\\
+
+\input{trimming.tex}
+
+\newpage
+
+\subsubsection{ノイズ処理}
+ノイズが非常に多い画像に対するマッチング処理を行うため，ノイズ除去を行う関数を実装した．
+ノイズ部分は白か黒，すなわち画素値は$0 or 255$であるため，この二種類の値を取っている画素について処理を行うことでノイズ除去による情報量の減少を抑えようと考えた．
+周辺8近傍の平均値がしきい値を上回った・下回った場合にはそれぞれ画素値を$0,255$とする実装を行った．
+また，我々のパターンマッチングのアイディアは黒でないピクセルから，隣接する白でない画素をなぞることで画像を切り抜くが，この切り抜いた部分の大きさが小さかった場合はノイズと判断する様に実装したため周辺が黒い部分での白のノイズの除去は一定の成果が出た時点で完成とした．
+\input{remove_noise.tex}
+
+\newpage
+
+\subsubsection{拡大倍率と回転への対応}
+実装当初は画素数の比を元にtemplate画像の拡大倍率を算出していたが良い結果が得られなかった．
+某氏の助言により画素値の総和の比を元に算出したところ非常に良い精度で得られた．
+image.pgm中の注目しているオブジェクトに対して切り出しを行なっているため画素値の総和は既知である．
+さらに各template画像についても読み込み時に既に算出している．
+したがって総当たりをすることなく，各template画像が注目オブジェクトに
+一致するとしたときの拡大倍率を算出することが可能である．
+一方，回転については-90度〜90度の180通りを総当たりした．
+
+\subsubsection{targetとtemplateの比較方法}
+今回の課題において要となるのはimage.pgm中の注目しているオブジェクト(target)と
+拡大倍率，回転角を反映した各種template画像(template)を何を基準にして比較するかという点だろう．
+本プログラムではtargetとtemplateの両方に対して内接する長方形で切り出しを行うことで解決した．
+もしtargetに対して適切なtemplate画像，拡大倍率，回転角のtemplateであれば，
+切り出した後の画像は等しくなるはずである．
+したがって単純に左上のピクセルから比較すればよいことが分かる．
+この手法を実現するためにはtemplateの画像データを用意し切り出しを行う必要がある．
+balance()関数はあるtemplate元画像クラス，拡大倍率，回転角を引数とし，
+それらを反映した新たなtemplate画像クラスを返す関数である．
+なお生成する画像は特に補完を行わず，写像後小数点以下を切り捨てた画素値を与えた．\\
+
+\input{balance.tex}
+
+また比較の範囲はtargetとtemplateが重なっている部分のみとした．
+これは切り出し後の幅と高さについて2画像のの最小値をとることで実現できる．
+targetと最も一致するtemplateは，1画素あたりの画素値の差の2乗が最小のものとした．
+某氏の指摘により比較領域の画素数で割ることに気づき精度が向上したことを記しておく．
+\newpage
+
+
+\subsubsection{特徴点抽出}
+手書きの数値画像の特徴点として，以下の項目が使えると考えた．
+\begin{itemize}
+	\item{画素値の合計}
+	\item{画素値の上下の偏り}
+	\item{画素値の左右の偏り}
+\end{itemize}
+画素値の合計とは，画像の画素の値を合計しただけのものである．
+単純な値ではあるが，文字の面積を図ることが出来るので特徴点として利用可能だと考えた．
+これはマッチング処理にて既に実装していた為，そのまま利用した．
+
+また，画素値が左右，上下でどれくらい偏ってるかによって上下対照・左右対称等の特徴を反映できるのではないかと考え，実装し実験を行った．
+
+\newpage
+\subsection{実行環境と結果}
+以下はMacbook Pro(Intel~Corei5~2GHzプロセッサ，8GBメモリ）で実行した結果である．
+また実行時間はchornoライブラリを用いて計測した．
+なおコンパイルは g++ ~-O3~-std=c++11~で行った．
+
+\subsubsection{image1}
+\begin{figure}[h]
+\centering
+\includegraphics[clip,width = 8.5cm]{images/image1.png}
+\caption{image1~ 解答と実行結果}
+\label{graph1}
+\end{figure}
+
+\input{table1.tex}
+実行時間は1.351秒であった．
+座標，回転角，拡大倍率の全てを正しく得ることができた．
+
+\subsubsection{image2}
+\begin{figure}[h]
+\centering
+\includegraphics[clip,width = 8.5cm]{images/image2.png}
+\caption{image2~ ノイズ除去後の画像}
+\label{graph2}
+\end{figure}
+
+\input{table2.tex}
+実行時間は40ミリ秒であった．\\
+なお，この課題のみ回転角と拡大倍率は固定とした．
+template3,5,8,13以外は全て誤認識となった．
+
+\subsubsection{image3}
+\begin{figure}[h]
+\centering
+\includegraphics[clip,width = 8.5cm]{images/image3.png}
+\caption{image3~ 回答と実行結果}
+\label{graph3}
+\end{figure}
+
+\input{table3.tex}
+\newpage
+実行時間は0.879秒であった．
+template2がtemplate8と誤識別されてしまった．
+他のオブジェクトに関しては座標は2以内，拡大倍率は0.01以内，
+回転角は3度以内の誤差で検出できた．
+\newpage
+
+
+\subsubsection{image4}
+
+\begin{figure}[h]
+\centering
+\includegraphics[clip,width = 8.5cm]{images/image4.png}
+\caption{image4}
+\label{graph4}
+\end{figure}
+
+\input{table4.tex}
+\newpage
+実行時間は0.769秒であった．
+全てのオブジェクトに関して十分な精度で検出できた．
+座標は2以内，拡大倍率は0.01以内，回転角は11度以内の誤差で検出できた．
+
+\newpage
+
+\subsubsection{image5}
+\begin{figure}[h]
+\centering
+\includegraphics[clip,width = 8.5cm]{images/image5.png}
+\caption{image5}
+\label{graph5}
+\end{figure}
+20個のうち正しく識別できたのはtemplate7,8,9,12,17,20の6個であった．
+オブジェクト同士が重なっている画像を識別することは今後への課題とする．
+
+\newpage
+
+\subsubsection{特徴点抽出}
+
+書いてある数字によって偏りが出ている．これらのパラメーターは手書き文字の判別に利用が可能だと考えられる．
+\begin{figure}[h]
+\centering
+\includegraphics[width = 11.5cm]{images/graph/summation.PNG}
+\caption{画素値の合計}
+\label{summation}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 11.5cm]{images/graph/upper.PNG}
+\caption{上半分の画素値の合計}
+\label{upper}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width = 11.5cm]{images/graph/left.PNG}
+\caption{左半分の画素値の合計}
+\label{left}
+\end{figure}
+
+\clearpage
+\subsection{考察}
+\subsubsection{計算時間}
+全ての拡大倍率，回転角について総当たりをした場合の計算量は，
+image.pgmの高さと幅$H, W$, template画像の高さと幅$H_t, W_t$,
+拡大倍率$S$, 回転角$R$, template画像数$T$を用いて
+\begin{align*}
+  O(H \cdot W \cdot H_t \cdot W_t \cdot S \cdot R \cdot T)
+\end{align*}
+で表される．これはおよそ$10^{13}$ステップあり
+全テンプレートの走査に10000秒程度かかることが予想される．\\
+一方今回私たちのプログラムは以下の計算量で走査を終える．
+\begin{align*}
+  O(H \cdot W + H_t \cdot W_t + H_t \cdot W_t \cdot  R \cdot T \cdot T)
+\end{align*}
+これはおよそ$10^8$ステップあり，1/10秒ほどで全テンプレートの走査を終えることができると考えられる．
+上記の実験では1秒前後で終えることができ，明らかな改善があったと言える．
+
+\subsubsection{精度}
+image3における誤識別や，出力結果の誤差について考察する．
+図5はimage.pgm中のオブジェクトと本アルゴリズムで作られたtemplate画像である．
+
+\begin{figure}[htbp]
+\begin{center}
+  \begin{tabular}{c}
+
+    % 1枚目の画像
+    \begin{minipage}{0.5\hsize}
+      \begin{center}
+        \includegraphics[clip, width=60mm]{images/naoko.png}
+        \hspace{1.6cm} (a)image.pgm中のオブジェクト
+      \end{center}
+    \end{minipage}
+
+    % 2枚目の画像
+    \begin{minipage}{0.5\hsize}
+      \begin{center}
+        \includegraphics[clip, width=60mm]{images/trimming.png}
+        \hspace{1.6cm} (b)template画像に拡大・回転処理をした画像
+      \end{center}
+    \end{minipage}
+
+  \end{tabular}
+  \caption{}
+  \label{fig:img}
+  \end{center}
+\end{figure}
+
+このように明らかな補完処理の差があるため，
+特に違いの少ない手書き文字の識別は非常に難しくなる．
+
+\newpage
+
+\section{感想}
+\subsection{河野}
+僕自身がC++でのコードの実装，また論理的にアルゴリズムを考えて実装するといった事には慣れていなかったため，
+チームメイトである小寺君へのアドバイスをする余裕があまりなく，予定より全体的に手間取ってしまった．
+カプセル化や関数切り分けのポイント等を指示するなど，互いの経験値になることを考えていたが課題の処理に負われてしまったのは反省点である．
+だが，この課題のコードを作りっぱなしにせず提出後も一部修正を加える予定であるのでそれを通じて僕もプログラミングのレベルアップを図りたいと考えている．
+
+\subsection{小寺}
+河野さんがメインで実装を行うと簡単にできてしまいそうだったので，
+僕の実装をサポートをしていただくお願いを聞き入れてもらった．
+複雑ではないプログラムとはいえ，1から実装するのは思ったよりも苦労した．
+今回の課題で最大の山場はtargetとtemplateを比較する方法である．
+重心を使わずにできないかと考え，思いついた時は非常に嬉しかった．
+また画像の回転を実装する際，あくまでtemplateの元画像から画素値を参照しているために
+画像の中心位置は拡大倍率によらない点に気付くまで苦労した．
+加えて，あらかじめ引数をそのまま返す関数を書いておき後ほど拡張したり，
+可読性を上げるために名前が短く分かりやすい変数を新たに宣言したりといった，
+ただ結果を出すだけでなく今後に繋がるような学びが多くあった．
+様々な角度で的確な助言をくれた河野さん並びに西田くんには非常に感謝している．
+まだまだ直すところがあるため今後も修正を続けたい．
+
+
+\section*{付録}
+\input{program.tex}
+
+\end{document}
+
