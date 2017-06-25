@@ -119,15 +119,19 @@ INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmss10.tfm
 INPUT readdata.tex
 INPUT readdata.tex
-OUTPUT report.dvi
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/uptex-fonts/jis/upjisg-v.tfm
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/uptex-fonts/jis/upjisg-h.tfm
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm
+OUTPUT report.dvi
 INPUT trimming.tex
 INPUT trimming.tex
+INPUT remove_noise.tex
+INPUT remove_noise.tex
 INPUT balance.tex
 INPUT balance.tex
+INPUT /usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
+INPUT /usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 INPUT images/image1.png
 INPUT extractbb -O images/image1.png
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/uptex-fonts/jis/upjisr-v.tfm
@@ -135,6 +139,10 @@ INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/uptex-fonts/jis/upjisr-h.tfm
 INPUT /usr/local/texlive/2016/texmf-dist/fonts/tfm/public/cm/cmr9.tfm
 INPUT table1.tex
 INPUT table1.tex
+INPUT images/image2.png
+INPUT extractbb -O images/image2.png
+INPUT table2.tex
+INPUT table2.tex
 INPUT images/image3.png
 INPUT extractbb -O images/image3.png
 INPUT table3.tex
@@ -145,6 +153,12 @@ INPUT table4.tex
 INPUT table4.tex
 INPUT images/image5.png
 INPUT extractbb -O images/image5.png
+INPUT images/graph/summation.png
+INPUT extractbb -O images/graph/summation.png
+INPUT images/graph/upper.png
+INPUT extractbb -O images/graph/upper.png
+INPUT images/graph/left.png
+INPUT extractbb -O images/graph/left.png
 INPUT images/naoko.png
 INPUT extractbb -O images/naoko.png
 INPUT images/trimming.png
