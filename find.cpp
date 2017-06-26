@@ -42,8 +42,8 @@ public:
 			fin >> str;
 			fin.ignore();
 			if(str != "P2") cout << "file format error" << endl;
-			getline(fin, str); // コメント読み捨て
-			fin >> W >> H; 
+			while(getline(fin, str), str[0]=='#'); // コメント読み捨て
+			sscanf(str.data(), "%d %d", &W, &H);
 			data.resize(H);
 			for(int i=0; i<H; i++){
 				data[i].resize(W);
