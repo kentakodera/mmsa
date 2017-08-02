@@ -34,12 +34,12 @@ class NormalDistribution {
 
 
 
-class KNN {
+class ClassificationManager{
 	private:
 		vector<pair<double,double>> results_class1;
 		vector<pair<double,double>> results_class2;
 	public:
-		KNN(vector<pair<double,double>> r_class1,vector<pair<double,double>> r_class2){
+		ClassificationManager(vector<pair<double,double>> r_class1,vector<pair<double,double>> r_class2){
 			results_class1 = r_class1;
 			results_class2 = r_class2;
 		}
@@ -121,8 +121,8 @@ int main(){
 	vector<pair<double,double>> results_class1 = n_d.get_results(30,5,30,10,TOTAL_DATA_AMOUNT);
 	vector<pair<double,double>> results_class2 = n_d.get_results(80,10,60,10,TOTAL_DATA_AMOUNT);
 
-	KNN knn(results_class1,results_class2);
-	knn.classification_by_knn();
+	ClassificationManager c_manager(results_class1,results_class2);
+	c_manager.classification_by_knn();
 
 }
 
